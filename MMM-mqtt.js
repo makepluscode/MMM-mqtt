@@ -11,10 +11,10 @@
 Module.register('MMM-mqtt', {
 
   defaults: {
-    mqttServer: 'mqtt://test.mosquitto.org',
+    mqttServer: 'mqtt://127.0.0.1',
     mode: 'receive',
     loadingText: 'Loading MQTT Data...',
-    topic: '',
+    topic: 'liviingroom/status',
     showTitle: false,
     title: 'MQTT Data',
     interval: 300000,
@@ -26,7 +26,7 @@ Module.register('MMM-mqtt', {
   start: function() {
     Log.info('Starting module: ' + this.name);
     this.loaded = false;
-    this.mqttVal = '';
+    this.mqttVal = [];
     this.updateMqtt(this);
   },
 
@@ -52,7 +52,26 @@ Module.register('MMM-mqtt', {
     }
 
     var mqttDiv = document.createElement('div');
-    mqttDiv.innerHTML = this.roundValue(this.mqttVal.toString()) + this.config.postText;
+    mqttDiv.innerHTML = "습도:"
+    mqttDiv.innerHTML += this.roundValue(this.mqttVal[0].toString()) + this.config.postText;
+    mqttDiv.className = "value bright large light";
+    wrapper.appendChild(mqttDiv);
+
+    mqttDiv = document.createElement('div');
+    mqttDiv.innerHTML = "온도:"
+    mqttDiv.innerHTML += this.roundValue(this.mqttVal[1].toString()) + this.config.postText;
+    mqttDiv.className = "value bright large light";
+    wrapper.appendChild(mqttDiv);
+
+    mqttDiv = document.createElement('div');
+    mqttDiv.innerHTML = "사람:"
+    mqttDiv.innerHTML += this.roundValue(this.mqttVal[2].toString()) + this.config.postText;
+    mqttDiv.className = "value bright large light";
+    wrapper.appendChild(mqttDiv);
+
+    mqttDiv = document.createElement('div');
+    mqttDiv.innerHTML = "티비:"
+    mqttDiv.innerHTML += this.roundValue(this.mqttVal[3].toString()) + this.config.postText;
     mqttDiv.className = "value bright large light";
     wrapper.appendChild(mqttDiv);
 
@@ -60,8 +79,10 @@ Module.register('MMM-mqtt', {
   },
 
   socketNotificationReceived: function(notification, payload) {
+
+    Log.info(this.name + " received " + notification + "and topic is " + payload.topic);
     if (notification === 'MQTT_DATA' && payload.topic === this.config.topic) {
-      this.mqttVal = payload.data.toString();
+      this.mqttVal = payload.data.toString().split(" ");
       this.loaded = true;
       this.updateDom();
     }
