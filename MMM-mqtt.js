@@ -13,7 +13,7 @@ Module.register('MMM-mqtt', {
   defaults: {
     mqttServer: 'mqtt://127.0.0.1',
     mode: 'receive',
-    loadingText: 'Loading MQTT Data...',
+    loadingText: '거실 스마트 제어기 연결중...',
     topic: 'liviingroom/status',
     showTitle: false,
     title: 'MQTT Data',
@@ -26,6 +26,7 @@ Module.register('MMM-mqtt', {
   start: function() {
     Log.info('Starting module: ' + this.name);
     this.loaded = false;
+    this.connected = false;
     this.mqttVal = [];
     this.updateMqtt(this);
   },
@@ -43,6 +44,12 @@ Module.register('MMM-mqtt', {
       wrapper.className = "loading medium";
       return wrapper;
     }
+    else {
+      if(!this.connected) {
+        this.sendNotification('SHOW_ALERT', {title:"알림", message:"스마트제어기가 연결되었습니다", timer:3000});
+        this.connected = true;
+      }
+    }
 
     if (this.config.showTitle) {
       var titleDiv = document.createElement('div');
@@ -52,27 +59,41 @@ Module.register('MMM-mqtt', {
     }
 
     var mqttDiv = document.createElement('div');
-    mqttDiv.innerHTML = "습도:"
+    mqttDiv.innerHTML = "습도 "
     mqttDiv.innerHTML += this.roundValue(this.mqttVal[0].toString()) + this.config.postText;
-    mqttDiv.className = "value bright large light";
+    mqttDiv.innerHTML += ""
+    mqttDiv.className = "value bright medium light";
     wrapper.appendChild(mqttDiv);
 
     mqttDiv = document.createElement('div');
-    mqttDiv.innerHTML = "온도:"
+    mqttDiv.innerHTML = "온도 "
     mqttDiv.innerHTML += this.roundValue(this.mqttVal[1].toString()) + this.config.postText;
-    mqttDiv.className = "value bright large light";
+    mqttDiv.innerHTML += ""
+    mqttDiv.className = "value bright medium light";
     wrapper.appendChild(mqttDiv);
 
     mqttDiv = document.createElement('div');
-    mqttDiv.innerHTML = "사람:"
-    mqttDiv.innerHTML += this.roundValue(this.mqttVal[2].toString()) + this.config.postText;
-    mqttDiv.className = "value bright large light";
+    mqttDiv.innerHTML = ""
+    if(this.mqttVal[2]=="1") {
+      mqttDiv.className = "value bright medium light";
+      mqttDiv.innerHTML += "사람있음";
+    }
+    else {
+      mqttDiv.className = "value medium light dimmed";
+      mqttDiv.innerHTML += "사람없음";
+    }
     wrapper.appendChild(mqttDiv);
 
     mqttDiv = document.createElement('div');
-    mqttDiv.innerHTML = "티비:"
-    mqttDiv.innerHTML += this.roundValue(this.mqttVal[3].toString()) + this.config.postText;
-    mqttDiv.className = "value bright large light";
+    mqttDiv.innerHTML = ""
+    if(this.mqttVal[3]=="1") {
+      mqttDiv.className = "value bright medium light";
+      mqttDiv.innerHTML += "티비켜짐";
+    }
+    else {
+      mqttDiv.className = "value medium light dimmed";
+      mqttDiv.innerHTML += "티비꺼짐";
+    }
     wrapper.appendChild(mqttDiv);
 
     return wrapper;
